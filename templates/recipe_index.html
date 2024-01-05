@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <div class="posts">
+
+  {% for page in section.pages %}
+  <section class="info">
+  <div class="info row" >
+     {% set filename =  page.components | slice(start=1, end=2) | join() %}
+     {% set filepath = "recipes/" ~ filename ~ ".webp" %}
+     {% set image_metadata = get_image_metadata(path=filepath, allow_missing=true) %}
+     {% if image_metadata %}
+        {% set image = resize_image(path=filepath, height=100, op="fit_height") %}
+        <div class="col-2">
+           <img src="{{ image.url }}" class="rounded" />
+        </div>
+     {% endif %}
+     <div class="col-10">
+        <div class="row">
+        <a href="{{ page.permalink }}">
+           <p class="text-start"> {{ page.title }} </p>
+        </a>
+        </div>
+        {% if page.description %}
+        <div class="row">
+           {{ page.description | safe | truncate }}
+        </div>
+        {% endif %}
+     </div>
+  </div>
+  </section>
+  {% endfor %}
+  </div>
+</div>
+{% endblock content %}
