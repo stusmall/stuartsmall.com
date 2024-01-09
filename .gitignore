@@ -1,2 +1,4 @@
-public/
+/public/
 /.idea
+/content/recipes/*.md
+!/content/recipes/_index.md
