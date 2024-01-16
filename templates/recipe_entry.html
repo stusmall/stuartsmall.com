@@ -13,7 +13,7 @@
       </div>
       {% endif %}
       {% if image_metadata %}
-      {% set image = resize_image(path=filepath, height=200, op="fit_height") %}
+      {% set image = resize_image(path=filepath, height=200, op="fit_height", format="webp") %}
       <div class="col-md-4">
         <img src="{{ image.url }}" class="rounded" />
       </div>
