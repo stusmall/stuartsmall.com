@@ -4,3 +4,7 @@ minify_html = true
 
 ignored_content = [ "*.cook"]
 
+
+taxonomies = [
+    { name = "tags", feed = true},
+]

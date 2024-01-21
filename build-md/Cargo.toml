@@ -1,0 +1,13 @@
+[package]
+name = "build-md"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+clap = {version = "4", features = ["derive"] }
+cooklang = "0.12"
+once_cell = "1.1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+textwrap = { version = "0.16.0", features = ["terminal_size"] }
