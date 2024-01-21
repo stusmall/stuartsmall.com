@@ -1,21 +1,34 @@
 name: Build and Deploy to Netlify
 on:
   push:
+    branches:
+      - main
   pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Setup cache
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            build-md/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - uses: cachix/install-nix-action@7ac1ec25491415c381d9b62f0657c7a028df52a7 # v24
         with:
           nix_path: nixpkgs=channel:nixos-23.11
       - name: Build nix enviroment
         run: nix-build
-      - name: Build cook files
-        run: nix-shell --command './scripts/build_cookfiles.sh'
       - name: Build site
-        run: nix-shell --command 'zola build'
+        run: nix-shell --command 'make'
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@7a92f00dde8c92a5a9e8385ec2919775f7647352 #v2.10
         with:
