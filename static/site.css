@@ -169,3 +169,9 @@ img {
 .info {
     margin: 1rem
 }
+
+code {
+    background-color: lightgrey ;
+    display: flex;
+    border: 0.2rem solid rgba(255, 255, 255, 0.2);
+}
