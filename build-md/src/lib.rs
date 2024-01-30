@@ -105,7 +105,11 @@ fn ingredients(
             write!(w, "{} ", entry.quantity)?;
         }
 
-        write!(w, "{}", ingredient.display_name())?;
+        if ingredient.modifiers().is_recipe() {
+            write!(w, "[{}](../{})", ingredient.display_name(), ingredient.display_name().replace(" ", "-"))?;
+        } else {
+            write!(w, "{}", ingredient.display_name())?;
+        }
 
         if ingredient.modifiers().is_optional() {
             write!(w, " (optional)")?;
