@@ -14,11 +14,11 @@
 
             <div class='info'>
                 {% if page.date %}
-                <span class='divider'/>
+                <span class='divider'> </span>
                 <span>{{ page.date | date(format="%d %B %Y") }}</span>
                 {% endif %}
                 {% if page.category %}
-                <span class='divider'/>
+                <span class='divider'> </span>
                 <!-- link to page category if user is building categories -->
                 {% if config.generate_categories_pages %}
                 <span><a href="/categories/{{page.category | slugify }}">{{ page.category }}</a></span>
@@ -28,7 +28,6 @@
                 {% endif %}
             </div>
         </section>
-        <hr/>
         {% endfor %}
     </div>
 </div>

@@ -1,6 +1,6 @@
 base_url = "/"
 
-minify_html = true
+minify_html = false
 
 ignored_content = [ "*.cook"]
 
