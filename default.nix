@@ -1,12 +1,18 @@
-{ nixpkgs ? import <nixpkgs> { } }:
-
-
-nixpkgs.mkShell {
+let
+  pkgs = import (
+    builtins.fetchGit {
+      name = "nixpkgs-jan-25-2025";
+      url = "https://github.com/nixos/nixpkgs/";
+      ref = "refs/heads/master";
+      rev = "aeba1dd05ab1f729eeac31677abfd39092fd1ee0";
+    }) {};
+in
+pkgs.mkShell {
   buildInputs = [
-    nixpkgs.cargo 
-    nixpkgs.rustc 
-    nixpkgs.rustfmt 
-    nixpkgs.zola 
+    pkgs.cargo
+    pkgs.rustc
+    pkgs.rustfmt
+    pkgs.zola
   ];
 }
 

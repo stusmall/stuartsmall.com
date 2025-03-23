@@ -1,13 +1,14 @@
-use cooklang::metadata::IndexMap;
-use cooklang::{Converter, CooklangParser, Extensions, Item, ScaledRecipe, Section, Step};
-use serde::Serialize;
 use std::collections::HashMap;
+use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::Write;
 use std::fs::{read_dir, read_to_string, File};
 use std::io;
 use std::io::stdout;
 use std::path::Path;
+
+use cooklang::{Converter, CooklangParser, Extensions, Item, ScaledRecipe, Section, Step};
+use serde::Serialize;
 
 pub fn build_folder(print_to_stdout: bool, input_folder: &Path) -> Result<(), Box<dyn Error>> {
     for file in read_dir(input_folder)? {
@@ -56,10 +57,10 @@ fn frontmatter(
     scaled_recipe: &ScaledRecipe,
 ) -> Result<(), Box<dyn Error>> {
     #[derive(Serialize)]
-    struct Frontmatter {
+    struct Frontmatter<'a> {
         #[serde(flatten)]
-        metadata: IndexMap<String, String>,
-        taxonomies: HashMap<String, Vec<String>>,
+        metadata: serde_yaml::mapping::Mapping, //IndexMap<String, String>,
+        taxonomies: HashMap<String, Vec<Cow<'a, str>>>,
     }
 
     if scaled_recipe.metadata.map.is_empty() {
@@ -215,8 +216,8 @@ fn write_step(
             }
             &Item::InlineQuantity { index } => {
                 let q = &recipe.inline_quantities[index];
-                write!(&mut step_str, "{}", q.value).unwrap();
-                if let Some(u) = q.unit_text() {
+                write!(&mut step_str, "{}", q.value()).unwrap();
+                if let Some(u) = q.unit() {
                     step_str.push_str(u);
                 }
             }
