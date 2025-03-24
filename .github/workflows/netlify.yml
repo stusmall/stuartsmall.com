@@ -22,11 +22,12 @@ jobs:
             ~/.cargo/git/db/
             build-md/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@5bb6a3b3abe66fd09bbf250dce8ada94f856a703 # v30
       - name: Setup Cache of Nix Store
         uses: nix-community/cache-nix-action@433f47d6a0f1384702e87434ee600c0269c1526f # v5.20
         with:
           primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix') }}
-      - uses: cachix/install-nix-action@02a151ada4993995686f9ed4f1be7cfbb229e56f # v31
       - name: Build nix environment
         run: nix-build
       - name: Build site

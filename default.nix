@@ -10,6 +10,7 @@ in
 pkgs.mkShell {
   buildInputs = [
     pkgs.cargo
+    pkgs.libwebp
     pkgs.rustc
     pkgs.rustfmt
     pkgs.zola
