@@ -6,9 +6,9 @@ edition = "2021"
 
 [dependencies]
 clap = {version = "4", features = ["derive"] }
-cooklang = "0.15.0"
+cooklang = "0.17"
 once_cell = "1.1"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 toml = "0.8"
-textwrap = { version = "0.16.0", features = ["terminal_size"] }
+textwrap = { version = "0.16", features = ["terminal_size"] }

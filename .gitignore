@@ -4,3 +4,4 @@
 !/content/recipes/_index.md
 target
 /.direnv
+/static/processed_images/
