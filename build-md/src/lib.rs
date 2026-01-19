@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Write;
 use std::fs::{read_dir, read_to_string, File};
@@ -7,7 +7,7 @@ use std::io;
 use std::io::stdout;
 use std::path::Path;
 
-use cooklang::{Converter, CooklangParser, Extensions, Item, ScaledRecipe, Section, Step};
+use cooklang::{Converter, CooklangParser, Extensions, Item, Recipe, Section, Step};
 use serde::Serialize;
 
 pub fn build_folder(print_to_stdout: bool, input_folder: &Path) -> Result<(), Box<dyn Error>> {
@@ -26,22 +26,22 @@ pub fn build_md(print_to_stdout: bool, input_file: &Path) -> Result<(), Box<dyn 
     let parser = CooklangParser::new(Extensions::all(), Converter::default());
     let contents = read_to_string(input_file)?;
     let parsed = parser.parse(&contents);
-    let scaled_recipe = parsed.into_result()?.0.default_scale();
+    let recipe = parsed.into_result()?.0;
 
     if print_to_stdout {
-        print_md(&scaled_recipe, parser.converter(), &mut stdout().lock())?;
+        print_md(&recipe, parser.converter(), &mut stdout().lock())?;
     } else {
         let mut output_path = input_file.to_path_buf();
         output_path.set_extension("md");
         let mut file = File::create(output_path)?;
-        print_md(&scaled_recipe, parser.converter(), &mut file)?;
+        print_md(&recipe, parser.converter(), &mut file)?;
     };
 
     Ok(())
 }
 
 fn print_md(
-    recipe: &ScaledRecipe,
+    recipe: &Recipe,
     converter: &Converter,
     mut writer: impl io::Write,
 ) -> Result<(), Box<dyn Error>> {
@@ -52,10 +52,7 @@ fn print_md(
     Ok(())
 }
 
-fn frontmatter(
-    writer: &mut impl io::Write,
-    scaled_recipe: &ScaledRecipe,
-) -> Result<(), Box<dyn Error>> {
+fn frontmatter(writer: &mut impl io::Write, scaled_recipe: &Recipe) -> Result<(), Box<dyn Error>> {
     #[derive(Serialize)]
     struct Frontmatter<'a> {
         #[serde(flatten)]
@@ -85,7 +82,7 @@ fn frontmatter(
 
 fn ingredients(
     w: &mut impl io::Write,
-    recipe: &ScaledRecipe,
+    recipe: &Recipe,
     converter: &Converter,
 ) -> Result<(), Box<dyn Error>> {
     if recipe.ingredients.is_empty() {
@@ -107,7 +104,12 @@ fn ingredients(
         }
 
         if ingredient.modifiers().is_recipe() {
-            write!(w, "[{}](../{})", ingredient.display_name(), ingredient.display_name().replace(" ", "-"))?;
+            write!(
+                w,
+                "[{}](../{})",
+                ingredient.display_name(),
+                ingredient.display_name().replace(" ", "-")
+            )?;
         } else {
             write!(w, "{}", ingredient.display_name())?;
         }
@@ -126,25 +128,20 @@ fn ingredients(
     Ok(())
 }
 
-fn cookware(w: &mut impl io::Write, recipe: &ScaledRecipe) -> Result<(), Box<dyn Error>> {
+fn cookware(w: &mut impl io::Write, recipe: &Recipe) -> Result<(), Box<dyn Error>> {
     if recipe.cookware.is_empty() {
         return Ok(());
     }
 
     writeln!(w, "## Cookware")?;
-    for item in recipe.group_cookware() {
-        let cw = item.cookware;
+    for cookware in &recipe.cookware {
         write!(w, "- ")?;
-        if !item.amount.is_empty() {
-            write!(w, "{} ", item.amount)?;
+        if let Some(x) = &cookware.quantity {
+            write!(w, "{} ", x)?;
         }
-        write!(w, "{}", cw.display_name())?;
+        write!(w, "{}", cookware.name)?;
 
-        if cw.modifiers().is_optional() {
-            write!(w, " (optional)")?;
-        }
-
-        if let Some(note) = &cw.note {
+        if let Some(note) = &cookware.note {
             write!(w, " ({note})")?;
         }
         writeln!(w)?;
@@ -154,7 +151,7 @@ fn cookware(w: &mut impl io::Write, recipe: &ScaledRecipe) -> Result<(), Box<dyn
     Ok(())
 }
 
-fn sections(w: &mut impl io::Write, recipe: &ScaledRecipe) -> Result<(), Box<dyn Error>> {
+fn sections(w: &mut impl io::Write, recipe: &Recipe) -> Result<(), Box<dyn Error>> {
     writeln!(w, "## Steps")?;
     for (idx, section) in recipe.sections.iter().enumerate() {
         write_section(w, section, recipe, idx + 1)?;
@@ -165,7 +162,7 @@ fn sections(w: &mut impl io::Write, recipe: &ScaledRecipe) -> Result<(), Box<dyn
 fn write_section(
     w: &mut impl io::Write,
     section: &Section,
-    recipe: &ScaledRecipe,
+    recipe: &Recipe,
     idx: usize,
 ) -> Result<(), Box<dyn Error>> {
     if section.name.is_some() || recipe.sections.len() > 1 {
@@ -185,11 +182,7 @@ fn write_section(
     Ok(())
 }
 
-fn write_step(
-    w: &mut impl io::Write,
-    step: &Step,
-    recipe: &ScaledRecipe,
-) -> Result<(), Box<dyn Error>> {
+fn write_step(w: &mut impl io::Write, step: &Step, recipe: &Recipe) -> Result<(), Box<dyn Error>> {
     let mut step_str = String::new();
 
     step_str += &format!("{}. ", step.number);
